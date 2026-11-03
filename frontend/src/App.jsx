@@ -29,8 +29,7 @@ const COL = [
   "#f87171",
 ];
 const api = async (url, body, form) => {
-  const r = await fetch(
-    "/api" + url,
+  const r = await fetch((import.meta.env.VITE_API_URL || '') + '/api' + url,
     body || form
       ? {
           method: "POST",

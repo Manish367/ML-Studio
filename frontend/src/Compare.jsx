@@ -38,7 +38,7 @@ export default function Compare({ ds, run }) {
   const [col, setCol] = useState("");
   useEffect(() => {
     run(async () => {
-      const r = await fetch("/api/fe/compare/" + ds.id);
+      const r = await fetch((import.meta.env.VITE_API_URL || '') + '/api/fe/compare/' + ds.id);
       if (!r.ok) throw new Error("Could not load comparison");
       const j = await r.json();
       setD(j);

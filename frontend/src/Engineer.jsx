@@ -6,7 +6,7 @@ const G = ({ title, children }) => (
   </div>
 );
 const post = async (u, b) => {
-  const r = await fetch("/api" + u, {
+  const r = await fetch((import.meta.env.VITE_API_URL || '') + '/api' + u, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(b || {}),
