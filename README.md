@@ -2,6 +2,13 @@
 
 A full-stack machine learning playground. Upload any CSV (or pick an example dataset), explore it, clean and transform it, compare many algorithms side by side, look inside the results with charts, and make new predictions. It has a glassmorphism UI built with React, Tailwind CSS and Bootstrap, and a Python FastAPI backend that runs scikit-learn.
 
+## Live demo
+
+- **App:** https://ml-studio-orpin.vercel.app
+- **API docs:** https://ml-studio-e6kr.onrender.com/docs
+
+The backend runs on Render's free tier, so it sleeps when idle. The first request after a quiet period can take about a minute while it wakes up. Loaded datasets and trained models live in memory and are cleared when the service restarts.
+
 ---
 
 ## Table of contents
