@@ -1,3 +1,6 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
 import time, uuid, numpy as np, pandas as pd
 from typing import Dict, List, Optional
 from fastapi import FastAPI, UploadFile, File, HTTPException
@@ -40,8 +43,12 @@ from detect import detect
 from sklearn.datasets import make_blobs
 
 app = FastAPI(title="ML Studio")
+ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",")]
 app.add_middleware(
-    CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"]
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 DATA: Dict[str, pd.DataFrame] = {}
 MODELS: Dict[str, dict] = {}
@@ -206,7 +213,7 @@ def sample(name: str):
     return store(SAMPLES[name][2]().copy())
 
 
-MAX_UPLOAD_MB = 500
+MAX_UPLOAD_MB = int(os.getenv("MAX_UPLOAD_MB", 500))
 
 
 def read_csv_fast(f):
