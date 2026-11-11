@@ -14,12 +14,16 @@ from sklearn.preprocessing import (
 )
 from sklearn.decomposition import PCA, TruncatedSVD
 from sklearn.manifold import TSNE
+from fastapi.responses import Response
 
 
 # ---------- automatic K selection ----------
-def k_scan(X):
+def k_scan(X, tick=None):
     rows = []
-    for k in range(2, min(10, len(X) - 1) + 1):
+    ks = list(range(2, min(10, len(X) - 1) + 1))
+    for idx, k in enumerate(ks):
+        if tick:
+            tick(idx, len(ks))
         km = KMeans(k, n_init=5, random_state=42).fit(X)
         l, c = km.labels_, km.cluster_centers_
         d = np.linalg.norm(c[:, None] - c[None], axis=2)
@@ -354,3 +358,15 @@ def register(app, DATA, info):
                 if c in new.columns and str(old[c].dtype) != str(new[c].dtype)
             ],
         }
+
+    @app.get("/api/fe/download/{i}")
+    def fe_download(i: str):
+        return Response(
+            content=DATA[i].to_csv(index=False),
+            media_type="text/csv",
+            headers={
+                "Content-Disposition": 'attachment; filename="ml-studio-cleaned.csv"'
+            },
+        )
+
+    return lambda i: (HIST.pop(i, None), LOG.pop(i, None), ORIG.pop(i, None))
