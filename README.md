@@ -1,52 +1,73 @@
 # ML Studio: Supervised and Unsupervised Learning Playground
 
-A full-stack machine learning playground. Upload any CSV (or pick an example dataset), explore it, clean and transform it, compare many algorithms side by side, look inside the results with charts, and make new predictions. It has a glassmorphism UI built with React, Tailwind CSS and Bootstrap, and a Python FastAPI backend that runs scikit-learn.
+A full-stack machine learning playground. Upload any CSV (or pick an example dataset), let the app tell you what kind of problem it is, clean and transform the data, compare many algorithms side by side, tune them, run AutoML, look inside the results with charts and explanations, and make new predictions. The UI is glassmorphism, built with React, Tailwind CSS and Bootstrap. The backend is Python with FastAPI and scikit-learn.
 
-## Live demo
+**Live demo:** https://ml-studio-orpin.vercel.app
+**API docs:** https://ml-studio-e6kr.onrender.com/docs
 
-- **App:** https://ml-studio-orpin.vercel.app
-- **API docs:** https://ml-studio-e6kr.onrender.com/docs
-
-The backend runs on Render's free tier, so it sleeps when idle. The first request after a quiet period can take about a minute while it wakes up. Loaded datasets and trained models live in memory and are cleared when the service restarts.
+The backend runs on Render's free tier, which sleeps when idle. The first request after a quiet period can take about a minute while it wakes up. Loaded datasets and trained models live in memory and are cleared when the service restarts.
 
 ---
 
 ## Table of contents
 
-1. [Features at a glance](#features-at-a-glance)
+1. [Features](#features)
 2. [Tech stack](#tech-stack)
 3. [Project structure](#project-structure)
 4. [Setup and run](#setup-and-run)
-5. [How to use the app](#how-to-use-the-app)
-6. [Tab by tab guide](#tab-by-tab-guide)
-7. [Algorithms included](#algorithms-included)
-8. [Evaluation metrics](#evaluation-metrics)
-9. [Dataset type detection](#dataset-type-detection)
-10. [Feature engineering operations](#feature-engineering-operations)
-11. [Performance and limits](#performance-and-limits)
-12. [API reference](#api-reference)
-13. [Design decisions](#design-decisions)
-14. [Troubleshooting](#troubleshooting)
-15. [Known limitations and what is not built](#known-limitations-and-what-is-not-built)
-16. [Roadmap status](#roadmap-status)
+5. [Configuration](#configuration)
+6. [How to use the app](#how-to-use-the-app)
+7. [Tab by tab guide](#tab-by-tab-guide)
+8. [Algorithms](#algorithms)
+9. [Metrics and charts](#metrics-and-charts)
+10. [Dataset type detection](#dataset-type-detection)
+11. [Feature engineering operations](#feature-engineering-operations)
+12. [Explanations](#explanations)
+13. [Performance and limits](#performance-and-limits)
+14. [API reference](#api-reference)
+15. [Testing and CI](#testing-and-ci)
+16. [Deployment](#deployment)
+17. [Design decisions](#design-decisions)
+18. [Troubleshooting](#troubleshooting)
+19. [Known limitations](#known-limitations)
 
 ---
 
-## Features at a glance
+## Features
 
-- **Upload any CSV** up to 500 MB, or load a built-in example dataset (grouped as supervised classification, supervised regression and unsupervised clustering).
-- **Automatic dataset type detection** (classification, regression, anomaly detection, clustering, time series, text) with a reason, a suggested target column and a confidence level. You can override it.
-- **Exploratory data analysis:** correlation heatmap, histograms and summary statistics.
-- **Feature engineering studio:** missing values, duplicates, combining columns, outliers and noise, scaling, transforms, encoding, binning, feature selection and dimensionality reduction (PCA, Truncated SVD, t-SNE). Includes a step log, undo (last 5 steps) and reset.
-- **Before vs After tab:** shows exactly what your feature engineering changed (shape, missing cells, duplicates, columns, distributions, statistics and correlations).
-- **Supervised learning:** 9 regression and 9 classification algorithms, trained and compared in one click, with cross-validation and training time.
-- **Rich result visualisations:** metric gauges, confusion matrix, ROC and precision-recall curves, feature importance, actual vs predicted with a perfect-prediction line, residual distribution and a model comparison chart with a metric selector.
-- **Unsupervised learning:** 5 clustering algorithms and 3 anomaly detectors, with PCA 2D visualisation and internal validation metrics.
-- **Automatic or manual K selection:** elbow, silhouette, Calinski-Harabasz, Davies-Bouldin and nearest cluster distance. Each method's suggestion is shown, and you can override K by hand.
-- **Predict tab:** type in new values and get a prediction (with class probabilities for classifiers) from any trained model.
-- **Built for larger data:** multi-core training for the heaviest models, automatic sampling for algorithms that scale badly, capped undo history and a parallel-friendly upload path. See [Performance and limits](#performance-and-limits).
-- **Reproducible results:** `random_state=42` everywhere a random seed applies, including every sampling step.
-- **Polished UX:** glass UI, animated loaders, readable error messages, wrong-target warnings.
+**Data**
+- Upload a CSV (up to 500 MB by default) or load a built-in example dataset, grouped as supervised classification, supervised regression and unsupervised clustering.
+- Automatic dataset type detection (classification, regression, labelled anomaly detection, clustering, time series, text) with a reason, a suggested target column, a confidence level and a manual override.
+- Dataset insights: plain-language problems and suggested fixes, such as missing values, duplicates, constant or ID-like columns, skew, outliers, correlated pairs, class imbalance and possible target leakage.
+- Exploratory analysis: correlation heatmap, histograms, box plots, scatter plots with optional colouring, and summary statistics.
+- Feature engineering studio with 13 operations, a step log, undo for the last 5 steps, reset, a Before vs After comparison and a cleaned-CSV download.
+
+**Supervised learning**
+- 9 regression and 9 classification algorithms, trained and compared in one click, with 3-fold cross-validation and training time.
+- Option to balance classes for imbalanced data.
+- Hyperparameter tuning with Optuna (random search if Optuna is not installed), with live progress and a cancel button.
+- AutoML: trains every algorithm, tunes the best three, and recommends one with a plain-language explanation.
+- Rich results: metric gauges, confusion matrix, classification report, ROC and precision-recall curves, one-vs-rest ROC for multiclass problems, actual vs predicted with a perfect-prediction line, residuals and feature importance.
+- A "How does X work?" note under every algorithm (Learning Mode).
+
+**Unsupervised learning**
+- 5 clustering algorithms and 3 anomaly detectors.
+- Automatic K selection (elbow, silhouette, Calinski-Harabasz, Davies-Bouldin, nearest cluster distance) or manual K, and the K each method suggests.
+- Adjustable DBSCAN settings and expected outlier share.
+- A check of anomaly detectors against a labelled outlier column (precision, recall, F1).
+- PCA 2D scatter, silhouette analysis, a dendrogram for hierarchical clustering, elbow and silhouette curves, and cluster distribution.
+
+**Prediction and explanation**
+- Predict with any trained, tuned or AutoML model, with class probabilities for classifiers.
+- "Why this prediction?" and "Which columns matter most" using a what-if method and permutation importance, or SHAP when it is installed.
+- Download any trained model as a `.joblib` file.
+
+**Experience and safety**
+- Experiment history for the current visit, with a comparison chart and JSON and CSV export.
+- Real progress bars for training, clustering, tuning and AutoML.
+- Readable error messages, warnings for a wrong target type, and a friendly message when a dataset has expired.
+- Memory and job limits so a public demo stays stable.
+- 27 automated backend tests and a GitHub Actions workflow.
 
 ---
 
@@ -56,11 +77,12 @@ The backend runs on Render's free tier, so it sleeps when idle. The first reques
 |---|---|
 | Frontend | React 18, Vite 5, Tailwind CSS 3 (preflight disabled), Bootstrap 5.3, Recharts |
 | Backend | Python, FastAPI, Uvicorn, Pydantic |
-| ML and data | scikit-learn, pandas, NumPy (optional: pyarrow for faster CSV parsing) |
-| Styling | Glassmorphism (backdrop blur, translucent cards), gradient background, Sora font (Google Fonts) |
-| Communication | REST API (JSON), Vite dev proxy from `/api` to `http://localhost:8000` |
+| ML and data | scikit-learn, pandas, NumPy, SciPy, Optuna, joblib |
+| Optional | SHAP (explanations), pyarrow (faster CSV parsing) |
+| Testing and CI | pytest, httpx, GitHub Actions |
+| Hosting | Render (backend) and Vercel (frontend) |
 
-**Prerequisites:** Python 3.10 or newer, Node.js 18 or newer, npm. scikit-learn 1.2 or newer is required (the code uses `OneHotEncoder(sparse_output=False)`).
+**Prerequisites:** Python 3.10 or newer (3.12 is used on Render; the tests also pass on 3.14), Node.js 18 or newer, npm. scikit-learn 1.2 or newer is required, and the app is pinned below 1.11 because `SVC(probability=True)` is deprecated.
 
 ---
 
@@ -69,24 +91,31 @@ The backend runs on Render's free tier, so it sleeps when idle. The first reques
 ```
 ml-studio/
 ├── README.md
+├── .github/workflows/ci.yml   # backend tests and frontend build on every push
 ├── backend/
-│   ├── main.py             # FastAPI app: datasets, upload, EDA, training, prediction, clustering
-│   ├── fe.py               # Feature engineering, undo/reset, before/after comparison, automatic K selection
-│   ├── detect.py           # Dataset type detection
-│   └── requirements.txt
+│   ├── main.py                # app, datasets, upload, EDA, training, prediction, clustering, jobs
+│   ├── fe.py                  # feature engineering, undo and reset, comparison, automatic K selection
+│   ├── detect.py              # dataset type detection
+│   ├── insights.py            # dataset insights
+│   ├── tune.py                # hyperparameter tuning, background jobs, job slots
+│   ├── automl.py              # AutoML
+│   ├── explain.py             # explanations (what-if, permutation, SHAP) and model download
+│   ├── requirements.txt
+│   ├── .env.example
+│   ├── conftest.py
+│   ├── pytest.ini
+│   └── tests/test_api.py
 └── frontend/
-    ├── index.html
-    ├── package.json
-    ├── vite.config.js      # React plugin and /api proxy to port 8000
-    ├── postcss.config.js
-    ├── tailwind.config.js  # preflight disabled so Tailwind does not fight Bootstrap
+    ├── .env.example
+    ├── index.html, package.json, vite.config.js, postcss.config.js, tailwind.config.js
     └── src/
-        ├── main.jsx        # Entry point (imports Bootstrap CSS, then index.css)
-        ├── index.css       # Glass theme, chips, form fixes, loader animations
-        ├── App.jsx         # Layout, tabs, Dataset / Explore / Supervised / Unsupervised / Predict
-        ├── Engineer.jsx    # Feature engineering tab
-        ├── Compare.jsx     # Before vs After tab
-        └── Loader.jsx      # Animated loading card
+        ├── main.jsx, index.css
+        ├── App.jsx            # layout, tabs, Dataset, Explore, Supervised, Unsupervised, Predict
+        ├── Engineer.jsx, Compare.jsx
+        ├── Tuner.jsx, AutoML.jsx
+        ├── Experiments.jsx, experiments.js
+        ├── Learn.jsx, Viz.jsx
+        ├── Loader.jsx, jobs.js
 ```
 
 ---
@@ -95,14 +124,16 @@ ml-studio/
 
 ### 1. Backend
 
-`requirements.txt`:
+`backend/requirements.txt`:
 ```
 fastapi
 uvicorn[standard]
 python-multipart
 pandas
 numpy
-scikit-learn
+scikit-learn<1.11
+python-dotenv
+optuna
 ```
 
 Windows:
@@ -114,7 +145,7 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-macOS / Linux:
+macOS and Linux:
 ```bash
 cd backend
 python3 -m venv venv
@@ -123,195 +154,173 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-The API is now at `http://localhost:8000`. Interactive API docs are at `http://localhost:8000/docs`.
+The API is at `http://localhost:8000`, with interactive docs at `http://localhost:8000/docs`.
 
-**Optional: faster CSV parsing for large files**
+Optional extras:
 ```bash
-pip install pyarrow
+pip install pyarrow   # faster parsing of large CSV files
+pip install shap      # adds the SHAP explanation method (see Explanations)
 ```
-If `pyarrow` is installed, uploads use it automatically. If it is missing, or does not have builds for your Python version yet, the app falls back to normal pandas parsing with no code changes.
+If an optional package does not install on your Python version, nothing breaks. The app falls back to its built-in behaviour.
 
 ### 2. Frontend
 
-In a second terminal:
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+Open **http://localhost:5173**. Vite forwards `/api` requests to port 8000, so start the backend first.
 
-Open **http://localhost:5173**. The Vite dev server forwards every `/api` request to the backend on port 8000, so the backend must be running first.
-
-### 3. Production build (optional)
+Production build:
 ```bash
-cd frontend
 npm run build
 ```
 
 ---
 
+## Configuration
+
+Copy each `.env.example` to `.env`. Real `.env` files are ignored by git.
+
+### Backend (`backend/.env`, or the Render dashboard)
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `MAX_UPLOAD_MB` | `500` | Largest CSV accepted (use about `25` on Render's free plan) |
+| `ALLOWED_ORIGINS` | `*` | Websites allowed to call the API, comma separated. In production use your frontend URL, for example `https://your-app.vercel.app,http://localhost:5173` |
+| `MAX_DATASETS` | `10` | Datasets kept in memory. The oldest are dropped first |
+| `MAX_CONCURRENT_JOBS` | `2` | Training, clustering, tuning and AutoML jobs running at once, server-wide |
+| `MAX_TUNE_TRIALS` | `30` | Upper limit on tuning trials per model |
+| `MAX_TUNE_SECONDS` | `90` | Upper limit on tuning seconds per model |
+| `TUNE_MAX_ROWS` | `10000` | Rows used inside the tuning search on big data |
+| `AUTOML_MAX_ROWS` | `20000` | Training rows used for AutoML's first pass |
+| `PYTHON_VERSION` | n/a | Render only. Use `3.12.7` |
+
+### Frontend (`frontend/.env`, or the Vercel dashboard)
+
+| Variable | Meaning |
+|---|---|
+| `VITE_API_URL` | Leave empty locally (the Vite proxy is used). In production set it to your backend URL with no trailing slash, for example `https://ml-studio-e6kr.onrender.com`. Vite bakes it into the build, so redeploy after changing it |
+
+Anything starting with `VITE_` is public in the browser. Never put secrets there.
+
+---
+
 ## How to use the app
 
-The tabs are laid out in the order of a typical machine learning workflow:
+The tabs follow a typical workflow:
 
-**Dataset → Explore → Engineer → Before vs After → Supervised or Unsupervised → Predict**
+**Dataset → Explore → Engineer → Before/After → Supervised or Unsupervised → Predict → History**
 
-1. **Dataset:** upload a CSV or click an example dataset. Read the detected type badge.
-2. **Explore:** look at correlations, distributions and statistics.
-3. **Engineer:** clean and transform the data step by step. Skip this if your data is already clean.
-4. **Before vs After:** check the effect of your steps.
-5. **Supervised** (you want to predict a column) or **Unsupervised** (you want to find groups or outliers): pick algorithms, run, and study the charts.
-6. **Predict:** enter values and get a prediction from a model you trained.
+1. **Dataset:** upload a CSV or click an example. Read the detected type, the insights and the column table.
+2. **Explore:** correlations, distributions, box plots and scatter plots.
+3. **Engineer:** clean and transform the data step by step (optional).
+4. **Before/After:** check what your steps changed.
+5. **Supervised** (predict a column) or **Unsupervised** (find groups or outliers): pick algorithms or run AutoML.
+6. **Predict:** enter values, get a prediction and see why.
+7. **History:** compare the runs from this visit and export them.
 
-Suggested order for messy data: remove duplicates, fill missing values, handle outliers, encode text columns, scale, then reduce dimensions if needed.
+A good order for messy data: remove duplicates, fill missing values, handle outliers, encode text columns, scale, then reduce dimensions if needed.
 
 ---
 
 ## Tab by tab guide
 
 ### Dataset
-- **Upload** a `.csv` file (up to 500 MB), or click an example dataset.
-- **Examples** are grouped so beginners do not mix them up:
+- Upload a `.csv`, or click an example dataset:
 
-| Group | Dataset | Description |
-|---|---|---|
-| Supervised: classification | Iris flowers | 150 flowers, predict the species |
-| Supervised: classification | Wine types | 178 wines, predict the cultivar |
-| Supervised: classification | Breast cancer | 569 tumours, benign or malignant |
-| Supervised: regression | Diabetes progression | 442 patients, predict disease progression |
-| Unsupervised: clustering | Iris (no labels) | Iris without the species column |
-| Unsupervised: clustering | Wine (no labels) | Wine without the cultivar column |
-| Unsupervised: clustering | Mall customers | 200 synthetic customers in 5 spending segments |
+| Group | Dataset |
+|---|---|
+| Supervised: classification | Iris flowers, Wine types, Breast cancer, Credit card fraud (synthetic, about 1.5% fraud) |
+| Supervised: regression | Diabetes progression |
+| Unsupervised: clustering | Iris (no labels), Wine (no labels), Mall customers (synthetic), Wholesale customers (synthetic, skewed spending) |
 
-- **Detected dataset type badge** with the reason, label column, usage hint and confidence. "Not what you expected?" gives two chips: **As detected** and **Treat as unsupervised**. The override changes the guidance and which column starts unselected in the Unsupervised tab. It resets if you apply a feature engineering step.
-- **Column table** with type, missing count and unique count, plus the row count, column count and duplicate count.
+- The **detected type badge** shows the reason, the label column, a usage hint and the confidence. If a label column exists, "Treat as unsupervised" lets you override it. Applying a feature engineering step re-runs detection and clears the override.
+- **Dataset insights** lists up to 14 findings, sorted by severity, each with a suggested fix.
+- The **column table** shows type, missing count and unique count.
 
 ### Explore
-- Correlation heatmap (cyan is positive, pink is negative).
-- Histograms for up to 12 numeric columns (15 bins each).
-- Summary statistics table (count, mean, std, min, quartiles, max).
-- An animated loader shows while the analysis runs.
+Correlation heatmap, histograms for up to 12 numeric columns, box plots (each on its own scale, with outlier counts), a scatter plot with optional colouring (up to 800 rows) and summary statistics.
 
 ### Engineer
-- Choose a step, set its parameters, select columns (chips show how many nulls each column has) and click **Apply step**.
-- **Applied steps** lists every operation with what it changed.
-- **Undo last** reverts one step (the last 5 steps can be undone), and **Reset all** returns to the dataset as first loaded.
-- The preview table shows the current data. Every other tab uses the current, engineered dataset.
-- Applying a step clears previously trained models and cluster results, because the data changed.
+Choose a step, set its options, select columns and click **Apply step**. Every step is logged. **Undo last** reverts one step (the last 5 can be undone), **Reset all** returns to the original data, and **Download current data as CSV** saves the result. Applying, undoing or resetting a step clears trained models, because they were trained on different data.
 
-See [Feature engineering operations](#feature-engineering-operations) for every operation.
-
-### Before vs After
-- **What changed:** rows, columns, missing cells, duplicate rows, numeric and text column counts, each shown as before → after with the difference. Missing cells and duplicates turn green when they drop.
-- **Added, removed and type-changed columns.**
-- **Steps applied** (the log).
-- **Distribution before vs after:** overlaid histograms for any column (up to 15 columns, shared bin range so they are comparable).
-- **Column statistics:** mean, standard deviation, skew and missing count, before → after, with changed values in yellow.
-- **Correlation change:** heatmap of after minus before for up to 12 numeric columns (cyan = stronger, pink = weaker).
-- "Before" is always the dataset as first loaded, kept separately from the undo history, so it is available no matter how many steps you apply. Columns created by feature engineering appear in the Added list but not in the statistics or distribution views, because they have no "before".
+### Before/After
+Rows, columns, missing cells, duplicates and column-type counts before and after, plus added, removed and type-changed columns, overlaid distributions, per-column statistics and a correlation-change heatmap. "Before" is always the data as first loaded.
 
 ### Supervised
-- **Setup:** learning type (classification or regression), target column, test size (0.1 to 0.5, default 0.2), scale numeric features, remove duplicates, and the algorithms to compare (pick as many as you like).
-- The learning type and target are pre-filled from the dataset detection.
-- **Wrong type warnings:** if you choose Classification for a continuous target, or Regression for a text target, a yellow notice offers a one-click switch. The backend also rejects these with a clear message.
-- **Pipeline:** each model is wrapped in a scikit-learn Pipeline (median imputation and optional standard scaling for numbers, most-frequent imputation and one-hot encoding for categories). It is fitted on the training split only, so nothing leaks from the test set.
-- **Splitting:** `train_test_split` with `random_state=42`, stratified for classification when every class has at least 2 rows.
-- **Cross-validation:** 3-fold on the training rows the model used (accuracy for classification, R² for regression).
-  - For classification with a rare class, the fold count is lowered to the smallest class size, and skipped if a class has only one row.
-  - It is skipped above 20,000 training rows to save time, and runs in parallel above 5,000 rows.
-  - When skipped, the `cv_mean` and `cv_std` columns are empty.
-- **Large data handling:** SVM and SVR train on a random sample of 10,000 rows when the training set is larger, because they slow down sharply with more rows. The **`trained_rows`** column in the comparison table shows how many rows each model actually learned from. Metrics are always computed on the full held-out test set.
-- **Results:**
-  - **Model comparison** table (click a row to inspect that model) and a bar chart with a **metric selector**. Classification offers accuracy, precision, recall, F1 and ROC-AUC. Regression offers R², within ±10%, MAE and RMSE. Every model name shows under its bar.
-  - **Metric gauges.** Classification: accuracy, precision, recall, F1, ROC-AUC. Regression: R² and "within ±10% of actual", plus MAE and RMSE.
-  - **Classification charts:** confusion matrix (heatmap-style), ROC curve and precision-recall curve (binary problems only), feature importance.
-  - **Regression charts:** actual vs predicted with a dashed perfect-prediction line and labelled axes, residual distribution, feature importance (where the model provides it).
-- An animated loader shows while training.
+- **Setup:** learning type, target, test size, scaling, duplicate removal, **Balance classes** (class weights for Logistic Regression, SVM, Decision Tree, Random Forest and Extra Trees), and the algorithms to compare. The type and target are pre-filled from detection, and a yellow notice offers a one-click fix if they don't match.
+- **Pipelines:** each model is a scikit-learn Pipeline (imputation, optional scaling, one-hot encoding), fitted on the training split only, so nothing leaks from the test set. The split uses `random_state=42`, stratified when possible.
+- **Results:** a comparison table with a metric selector and bar chart, metric gauges, and the charts listed under [Metrics and charts](#metrics-and-charts).
+- **Learning Mode:** a "How does X work?" dropdown under the algorithm chips.
+- **Hyperparameter tuning:** tunes the ticked algorithms with cross-validation on the training data only, then scores before and after on the untouched test set. Shows best settings and a search curve. If "after" is lower than "before", keep the defaults.
+- **AutoML:** trains every algorithm with defaults, ranks them, tunes the top 3, and recommends one. A tuned version replaces the default only if it beat it in cross-validation.
 
 ### Unsupervised
-- **Algorithms:** `kmeans`, `dbscan`, `agglomerative`, `gmm`, `meanshift` (clustering), and `isolation_forest`, `lof`, `oneclass_svm` (anomaly detection).
-- **Choosing K** (K-Means, Agglomerative and GMM):
-  - **Let the algorithm decide K:** pick a method (Elbow, Silhouette, Calinski-Harabasz, Davies-Bouldin or Nearest cluster distance). On Run, K is set automatically.
-  - **Assign K manually:** the slider (2 to 10) unlocks. After an automatic run you can click **Change K myself**.
-  - After every run you see the K suggested by each method. Click one to use it as your manual K.
-- **Features:** numeric columns as chips. The detected label column (if any) starts unselected.
-- **Large data handling:** big datasets are randomly sampled before clustering (50,000 rows, or 8,000 for Agglomerative, Mean Shift, LOF and One-Class SVM). The silhouette score is estimated on at most 5,000 points, and the PCA plot draws at most 5,000 points. A note above the metrics tells you when a sample was used and how many rows it contained.
-- **Results:**
-  - Metrics: silhouette, Davies-Bouldin, Calinski-Harabasz, number of clusters, noise points and K-Means inertia. For anomaly detectors: anomaly and normal counts.
-  - **PCA 2D scatter** coloured by cluster, with outliers and noise in red, and the explained variance of each axis in the title.
-  - **Elbow** (inertia), **Silhouette by K** and **Nearest cluster distance** curves.
-  - **Cluster distribution** bar chart.
-- An animated loader shows while the run is in progress.
+- **Algorithms:** `kmeans`, `dbscan`, `agglomerative`, `gmm`, `meanshift`, `isolation_forest`, `lof`, `oneclass_svm`.
+- **K selection (K-Means, Agglomerative, GMM):** let the app decide using a method you choose, or assign K manually. After every run you see the K each method suggests, and you can click one to use it.
+- **Settings:** DBSCAN `eps` and minimum points, and the expected share of outliers for the anomaly detectors.
+- **Label check:** for a labelled outlier column, compares the detector's flags with the labels (the rarer label value counts as the true outlier).
+- **Charts:** PCA 2D view with outliers in red, silhouette analysis, a dendrogram (Agglomerative only), elbow and silhouette curves, nearest cluster distance, and cluster distribution.
 
 ### Predict
-- Pick one of the models you trained on the Supervised tab.
-- Numeric features get number inputs (default is the column median). Categorical features get dropdowns.
-- Output: the predicted value or class, and class probabilities as progress bars for classifiers that support them.
+Pick any trained model for the current data, including "(tuned)" and "AutoML best" models. Enter values and click **Predict and explain**. You get the prediction, class probabilities, a "Why this prediction?" chart and an overall importance chart. **Download this model** saves it as a `.joblib` file.
+
+### History
+Every training, tuning, AutoML and clustering run since the page loaded, with settings, steps applied and a headline score. Compare runs on a chart (only runs measured with the same score share a chart) and export JSON or CSV. The list is cleared when you reload the page.
 
 ---
 
-## Algorithms included
+## Algorithms
 
-### Regression (9)
-Linear Regression, Polynomial Regression (degree 2), Ridge, Lasso, Decision Tree, Random Forest, KNN, SVR, Gradient Boosting.
+**Regression (9):** Linear, Polynomial (degree 2), Ridge, Lasso, Decision Tree, Random Forest, KNN, SVR, Gradient Boosting.
 
-### Classification (9)
-Logistic Regression, KNN, Decision Tree, Random Forest, SVM (with probability estimates), Naive Bayes (Gaussian), Gradient Boosting, AdaBoost, Extra Trees.
+**Classification (9):** Logistic Regression, KNN, Decision Tree, Random Forest, SVM, Naive Bayes, Gradient Boosting, AdaBoost, Extra Trees.
 
-### Clustering (5)
-K-Means, DBSCAN (`eps=1.2`, `min_samples=5` on scaled data), Agglomerative (hierarchical), Gaussian Mixture Model, Mean Shift.
+**Clustering (5):** K-Means, DBSCAN, Agglomerative (hierarchical), Gaussian Mixture, Mean Shift.
 
-### Anomaly detection (3)
-Isolation Forest, Local Outlier Factor, One-Class SVM (contamination or nu fixed at 5%).
+**Anomaly detection (3):** Isolation Forest, Local Outlier Factor, One-Class SVM.
 
-### Dimensionality reduction (3)
-PCA, Truncated SVD, t-SNE. These are available as a feature engineering step, and PCA also drives the 2D cluster plot.
+**Dimensionality reduction (3):** PCA, Truncated SVD, t-SNE, available as a feature engineering step. PCA also drives the 2D cluster plot.
 
-### Reproducibility
-`random_state=42` is set on every model that has a random component, plus the train/test split, PCA, t-SNE, the K-Means scans and every random sampling step. These algorithms have no random element, so they give the same result every run: Linear Regression, KNN, Naive Bayes, DBSCAN, Agglomerative, Mean Shift, LOF and One-Class SVM.
-
-### Multi-core
-Random Forest, Extra Trees and KNN use all CPU cores (`n_jobs=-1`).
+**Reproducibility:** `random_state=42` is set on every model with a random component, on the split, on PCA and t-SNE, and on every sampling step. Linear Regression, KNN, Naive Bayes, DBSCAN, Agglomerative, Mean Shift, LOF and One-Class SVM have no random component. Random Forest, Extra Trees and KNN use all CPU cores.
 
 ---
 
-## Evaluation metrics
+## Metrics and charts
 
 | Task | Metrics |
 |---|---|
-| Regression | MAE, MSE, RMSE, R², within ±10% of actual, cross-validated R² (mean and std), training time, rows trained on |
-| Classification | Accuracy, precision, recall, F1 (weighted averages), ROC-AUC, confusion matrix, cross-validated accuracy (mean and std), training time, rows trained on. The classification report is computed by the API and returned in the response, but is not shown in the UI yet |
-| Clustering | Silhouette score (estimated on at most 5,000 points), Davies-Bouldin index, Calinski-Harabasz score, inertia (K-Means), cluster count, noise count. Noise points (label -1) are excluded from the scores |
-| Anomaly detection | Anomaly count, normal count, outliers highlighted on the PCA plot |
+| Regression | MAE, MSE, RMSE, R², "within ±10% of actual", cross-validated R², training time, rows trained on |
+| Classification | Accuracy, balanced accuracy, precision, recall, F1 (weighted), ROC-AUC, PR-AUC (binary), cross-validated accuracy, training time, rows trained on |
+| Clustering | Silhouette, Davies-Bouldin, Calinski-Harabasz, inertia (K-Means), cluster and noise counts |
+| Anomaly detection | Anomaly and normal counts, plus precision, recall and F1 against a label column when one exists |
 
-**Note on accuracy for regression:** accuracy is a classification metric, so regression has none. The closest equivalents are **R²** (share of variation explained) and **within ±10%** (share of predictions within 10% of the real value).
+Accuracy does not exist for regression. The closest equivalents are R² (share of variation explained) and "within ±10%".
 
-**Reading actual vs predicted:** each dot is one unseen test row, with the real value across and the model's prediction up. The dashed line is a perfect prediction. Dots above it are overestimates and dots below it are underestimates. The residual chart next to it shows actual minus predicted, and a tall bar centred on 0 with a narrow spread is good.
+**Charts:** confusion matrix, classification report, ROC curve, precision-recall curve, one-vs-rest ROC for up to 10 classes, actual vs predicted (the dashed line is a perfect prediction), residual distribution, feature importance, model comparison, PCA scatter, silhouette analysis, dendrogram, elbow, silhouette by K and nearest cluster distance.
 
-**How the automatic K methods work:**
-- **Elbow:** the knee of the inertia curve, found as the point furthest from the straight line joining the first and last points.
-- **Silhouette:** K with the highest silhouette score.
-- **Calinski-Harabasz:** K with the highest score.
-- **Davies-Bouldin:** K with the lowest score.
-- **Nearest cluster distance:** K with the highest ratio of the distance between the two closest cluster centres to the largest average cluster radius (best separated).
-- All five are computed from a K-Means scan over K = 2 to 10 on the scaled, median-imputed numeric features (on the sample when the data is large).
+**With imbalanced data**, plain accuracy is misleading. Judge by balanced accuracy, PR-AUC and the recall of the rare class in the classification report.
+
+**Automatic K methods:** elbow (the knee of the inertia curve), silhouette (highest), Calinski-Harabasz (highest), Davies-Bouldin (lowest) and nearest cluster distance (highest ratio of the gap between the two closest cluster centres to the largest cluster radius). All are computed from a K-Means scan over K = 2 to 10.
 
 ---
 
 ## Dataset type detection
 
-Detection runs on every upload, example load and feature engineering step, and shows a badge on the Dataset tab.
+Detection runs on every upload, example load and feature engineering step.
 
 | Detected type | Rule |
 |---|---|
-| Anomaly detection (labels available) | A column whose name contains `outlier`, `anomaly`, `anomalous` or `novelty`, with exactly 2 distinct values |
+| Anomaly detection (labels available) | A column named like `outlier`, `anomaly`, `anomalous` or `novelty` with exactly 2 values |
 | Time series | A datetime column, or a text column named like `date` or `time` that parses as dates |
 | Text (NLP) | A text column with long strings (average length over 50) and mostly unique values |
-| Classification (binary or multiclass) | A column named like `target`, `label`, `class`, `outcome`, `species`, `diagnosis`, `survived`, `churn`, `default`, `fraud`, `price`, `salary`, `charges` or `medv` that has few distinct values (text, or whole numbers with at most 20 values and at most 10% of the row count), **or** an unnamed last column with only a few whole-number values (medium confidence) |
-| Regression | A named target column (same names as above) that is a continuous number |
-| Clustering (no target found) | Anything else |
+| Classification | A column named like `target`, `label`, `class`, `outcome`, `species`, `diagnosis`, `survived`, `churn`, `default`, `fraud`, `price`, `salary`, `charges` or `medv` with few distinct values, or an unnamed last column with only a few whole-number values (medium confidence) |
+| Regression | A named target column (same names) that is a continuous number |
+| Clustering | Anything else |
 
-Detection is a heuristic, so check the confidence label. Time series and text datasets are only flagged. The built-in tabs cannot train on them yet.
+Detection is a heuristic, so check the confidence label. Time series and text datasets are flagged but cannot be trained on.
 
 ---
 
@@ -319,141 +328,186 @@ Detection is a heuristic, so check the confidence label. Time series and text da
 
 | Operation | Options |
 |---|---|
-| Fill missing values | mean, median, mode, constant, forward fill, KNN imputation (columns optional, empty means all) |
-| Drop rows / columns with nulls | rows or columns, with a maximum percentage of missing values allowed |
-| Handle duplicate rows | remove them, or replace values in duplicate rows (selected columns) with mean, median, mode or a value you type |
-| Combine columns | concatenate (with separator), sum, mean, product, difference, with a name for the new column |
+| Fill missing values | mean, median, mode, constant, forward fill, KNN imputation |
+| Drop rows or columns with nulls | maximum percentage of missing values allowed |
+| Handle duplicate rows | remove them, or replace values in duplicate rows with mean, median, mode or a value |
+| Combine columns | concatenate, sum, mean, product, difference |
 | Drop columns | remove selected columns |
-| Handle outliers / noise | IQR or z-score, with a factor (1.5 IQR, 3 for z-score), then clip or remove rows |
-| Scale numeric columns | standard, min-max, robust |
-| Transform | log1p, square root, square (for skewed or noisy columns) |
+| Handle outliers | IQR or z-score, then clip or remove |
+| Scale | standard, min-max, robust |
+| Transform | log1p, square root, square |
 | Encode categorical columns | one-hot or label encoding |
-| Bin into groups | quantile bins, number of bins you choose |
+| Bin | quantile bins |
 | Remove low-variance features | variance threshold |
-| Remove correlated features | drops one column of each pair above a correlation threshold (default 0.95) |
-| Dimensionality reduction | PCA, Truncated SVD or t-SNE (t-SNE limited to 3 components), with a "keep untouched" option for columns such as the target. Output columns are named like `pca_1`, `pca_2` |
+| Remove correlated features | correlation threshold |
+| Dimensionality reduction | PCA, Truncated SVD or t-SNE, with an option to keep columns such as the target untouched |
 
-Every step is logged with a description of what it did. The original dataset is kept for Reset and Before vs After, and the last 5 steps are kept for Undo.
+---
+
+## Explanations
+
+- **What-if (always available):**
+  - *Single prediction:* each input is swapped for a typical value (the median, or the most common category) and the change in the prediction is shown. It is an approximation, because overlapping columns can double-count.
+  - *Overall:* permutation importance, which shows how much the test score drops when a column's values are shuffled.
+- **SHAP (optional):** if `shap` is installed, a method switch appears on the Predict tab. Tree models use SHAP's fast tree method, linear models use its linear method, and KNN, SVM, SVR, Naive Bayes, AdaBoost and Polynomial Regression use the slower general method with capped rows. One-hot columns are summed back to their original column. The baseline is the average over a sample of unseen test rows. The overall chart averages the absolute SHAP values over up to 200 rows (40 for the general method).
+- On a small free server, leave SHAP out unless you have tested its memory use. The what-if method covers every model.
 
 ---
 
 ## Performance and limits
 
-### Upload size
-- The maximum upload is **500 MB** (`MAX_UPLOAD_MB` in `backend/main.py`). Larger files are rejected with a readable message (HTTP 413).
-- Files are parsed straight from disk without an extra copy in memory, and the upload runs in a worker thread so it does not block other requests.
-- Parsing is faster if `pyarrow` is installed.
-- Rough memory rule: the in-memory table is typically 2 to 5 times the CSV size. The server also keeps the original dataset and up to 5 undo snapshots per dataset, so a very large file used with many feature engineering steps needs several times that.
-
-### What is optimised
 | Area | Behaviour |
 |---|---|
-| Random Forest, Extra Trees, KNN | Use all CPU cores |
-| SVM / SVR | Train on a random 10,000-row sample when the training set is larger |
-| Cross-validation | Parallel above 5,000 rows, skipped above 20,000 rows |
-| Clustering and anomaly detection | Random sample of 50,000 rows, or 8,000 for Agglomerative, Mean Shift, LOF and One-Class SVM |
-| Silhouette score and automatic K scan | Estimated on at most 5,000 points |
-| PCA cluster plot | Draws at most 5,000 points |
-| Undo history | Last 5 steps plus the original |
-| Predictions, metrics, curves | Always computed on the full held-out test set (supervised) |
+| Upload | Up to `MAX_UPLOAD_MB`; the CSV is streamed, and `pyarrow` speeds parsing if installed |
+| Datasets in memory | The newest `MAX_DATASETS` are kept. Older ones return a "please reload your dataset" message |
+| Dataset IDs | 32-character random IDs |
+| Undo history | The last 5 steps plus the original |
+| SVM and SVR | Train on a random 10,000-row sample when the training set is larger |
+| Cross-validation | Parallel above 5,000 rows, skipped above 20,000 |
+| Clustering and anomaly detection | A random sample of 50,000 rows, or 8,000 for Agglomerative, Mean Shift, LOF and One-Class SVM |
+| Silhouette score and K scan | Estimated on at most 5,000 points |
+| Cluster plots | PCA scatter up to 5,000 points, silhouette analysis up to 400, dendrogram up to 300 rows |
+| Tuning | Up to `MAX_TUNE_TRIALS` trials and `MAX_TUNE_SECONDS` seconds per model, on at most `TUNE_MAX_ROWS` rows |
+| AutoML | First pass on at most `AUTOML_MAX_ROWS` training rows |
+| Background jobs | One per browser tab, and `MAX_CONCURRENT_JOBS` across the server |
 
-The app tells you when it sampled: the `trained_rows` column on the Supervised tab, and a note above the metrics on the Unsupervised tab.
+The app says when it sampled, through the `trained_rows` column on the Supervised tab and a note above the clustering metrics. Test-set scores always use the full held-out test set.
 
-### Indicative timings
-Measured on a synthetic regression file with 60,000 rows and 9 columns, on a **single-core** test machine. On a multi-core computer the Random Forest, Extra Trees and KNN numbers should be lower. Treat these as rough guidance, not guarantees.
+**Indicative timings** (a 60,000-row synthetic file with 9 columns, on a single-core machine; multi-core machines will be faster for Random Forest, Extra Trees and KNN): upload 0.9 s, Linear Regression plus Random Forest 43 s, SVR on a 10,000-row sample 17 s, KNN 1.6 s, Gradient Boosting 14 s, K-Means with automatic K 10.5 s, Agglomerative on an 8,000-row sample 5.8 s.
 
-| Step | Time |
-|---|---|
-| Upload | 0.9 s |
-| Linear Regression and Random Forest | 43 s |
-| SVR (on a 10,000-row sample) | 17 s |
-| KNN | 1.6 s |
-| Gradient Boosting | 14 s |
-| K-Means with automatic K | 10.5 s |
-| Agglomerative (on an 8,000-row sample) | 5.8 s |
-
-### Practical guidance (estimates)
-| Rows | What to expect |
-|---|---|
-| Up to about 50,000 | Comfortable for most algorithms |
-| 50,000 to 200,000 | Works. Pick fewer algorithms at a time, and expect Random Forest and Gradient Boosting to take the longest |
-| Over 200,000 | Limited mostly by your computer's RAM. Sample the data first if you can |
-
-For exact results on large data, prefer the algorithms that are not sampled: Linear, Ridge, Lasso and Logistic Regression, Decision Tree, Random Forest, Naive Bayes, K-Means, GMM and Isolation Forest.
+**Guidance:** comfortable up to about 50,000 rows, workable to about 200,000 with fewer algorithms at a time, and RAM-limited beyond that.
 
 ---
 
 ## API reference
 
-Base URL: `http://localhost:8000`
+Base URL: `http://localhost:8000`. Errors return `{ "detail": "..." }` with a readable message.
 
 | Method | Endpoint | Purpose |
 |---|---|---|
-| GET | `/api/algos` | Algorithm lists, example datasets (with group, task and description) |
-| POST | `/api/sample/{name}` | Load an example dataset (`iris`, `wine`, `breast_cancer`, `diabetes`, `iris_unlabeled`, `wine_unlabeled`, `mall_customers`) |
-| POST | `/api/upload` | Upload a CSV (multipart form field `file`, maximum 500 MB, returns 413 above that) |
-| GET | `/api/eda/{id}` | Histograms, correlation matrix, summary statistics |
+| GET | `/api/algos` | Algorithm lists and example datasets |
+| POST | `/api/sample/{name}` | Load an example dataset |
+| POST | `/api/upload` | Upload a CSV (multipart field `file`) |
+| GET | `/api/eda/{id}` | Histograms, correlations, box-plot data, statistics |
+| GET | `/api/eda/{id}/scatter` | Scatter data (`x`, `y`, optional `color`) |
+| GET | `/api/insights/{id}` | Dataset insights |
 | POST | `/api/fe/apply` | Apply one feature engineering step |
-| POST | `/api/fe/undo/{id}` | Undo the last step (up to 5 steps back) |
-| POST | `/api/fe/reset/{id}` | Return to the dataset as first loaded |
-| GET | `/api/fe/compare/{id}` | Before vs after comparison data |
-| POST | `/api/train` | Train and evaluate one or more supervised models |
-| POST | `/api/predict` | Predict for one new row with a trained model |
-| POST | `/api/cluster` | Run clustering or anomaly detection |
+| POST | `/api/fe/undo/{id}` | Undo the last step |
+| POST | `/api/fe/reset/{id}` | Reset to the original data |
+| GET | `/api/fe/compare/{id}` | Before vs after data |
+| GET | `/api/fe/download/{id}` | Current data as CSV |
+| POST | `/api/train` | Train models (blocking) |
+| POST | `/api/train/start` | Train models as a background job |
+| POST | `/api/cluster` | Cluster or detect anomalies (blocking) |
+| POST | `/api/cluster/start` | Cluster as a background job |
+| POST | `/api/tune` | Start a tuning job |
+| POST | `/api/automl` | Start an AutoML job |
+| GET | `/api/job/{id}` | Job status, progress and result |
+| POST | `/api/job/{id}/cancel` | Cancel a tuning or AutoML job |
+| GET | `/api/models/{dataset_id}` | Models available for a dataset |
+| POST | `/api/predict` | Predict for one new row |
+| POST | `/api/explain/local` | What-if explanation of one prediction |
+| POST | `/api/explain/global` | Permutation importance |
+| GET | `/api/explain/capabilities` | Whether SHAP is installed |
+| POST | `/api/explain/shap/local` | SHAP explanation of one prediction |
+| POST | `/api/explain/shap/global` | Average SHAP importance |
+| GET | `/api/model/download` | Download a model (`model_id`) as `.joblib` |
 
-Dataset responses include `id`, `rows`, `cols` (name, dtype, missing, unique, numeric), `duplicates`, `preview`, `detected`, and (after feature engineering) `log`.
+Background job requests send an `X-Client-Id` header (the frontend creates one per browser tab). The server allows one running job per ID and `MAX_CONCURRENT_JOBS` overall, and answers `429` with a message otherwise.
 
 **Train request:**
 ```json
 {
-  "dataset_id": "a1b2c3d4",
+  "dataset_id": "a1b2c3d4...",
   "task": "regression",
   "target": "charges",
   "algos": ["Linear Regression", "Random Forest"],
   "test_size": 0.2,
   "scale": true,
-  "drop_duplicates": true
+  "drop_duplicates": true,
+  "balance": false
 }
 ```
-The response lists, for each model, its metrics, `cv_mean`, `cv_std`, `trained_rows` and `train_time`, plus the chart data for each model.
 
 **Cluster request:**
 ```json
 {
-  "dataset_id": "a1b2c3d4",
+  "dataset_id": "a1b2c3d4...",
   "algo": "kmeans",
   "k": 3,
+  "k_method": "silhouette",
   "features": ["Age", "Annual Income (k$)"],
-  "k_method": "silhouette"
+  "eps": 1.2,
+  "min_samples": 5,
+  "contamination": 0.05,
+  "label_col": null
 }
 ```
-Set `k_method` to `manual` to use `k` as given. Other values are `elbow`, `silhouette`, `calinski`, `davies_bouldin` and `nearest_cluster`. The response includes `k_used`, `k_picks`, `metrics`, `points` (at most 5,000), `elbow` (the K scan), `counts`, `var`, and `sampled_rows` and `total_rows`.
+`k_method` can be `manual`, `elbow`, `silhouette`, `calinski`, `davies_bouldin` or `nearest_cluster`.
 
-**Feature engineering request:**
-```json
-{
-  "dataset_id": "a1b2c3d4",
-  "op": "fill_missing",
-  "cols": ["bmi"],
-  "params": { "strategy": "median" }
-}
+**Using a downloaded model:**
+```python
+import joblib, pandas as pd
+b = joblib.load("ml-studio-Random_Forest.joblib")   # only load files you trust
+pred = b["pipe"].predict(pd.DataFrame([{"column": value}]))[0]
+# classification: b["classes"][pred] is the label; b["sklearn_version"] is the version it was saved with
 ```
-Operation names: `fill_missing`, `drop_missing`, `duplicates`, `combine`, `drop_columns`, `outliers`, `scale`, `transform`, `encode`, `bin`, `var_threshold`, `corr_filter`, `reduce`.
 
-**Predict request:** `{ "model_id": "<dataset_id>:<model name>", "row": { "age": 30, "smoker": "yes" } }`
+---
 
-Errors come back as JSON `{ "detail": "..." }` with a readable message (for example, choosing Classification for a continuous column, or uploading a file that is too large).
+## Testing and CI
+
+```bash
+cd backend
+pip install pytest httpx
+python -m pytest -q
+```
+
+The 27 tests cover dataset detection and insights, EDA data, the full feature engineering flow, training for both task types, balancing and metrics, multiclass ROC, wrong-target rejection, rare classes, prediction and both explanation methods, model download, SHAP (skipped if not installed), clustering with the silhouette plot and dendrogram, the anomaly label check, background jobs and their errors, tuning, AutoML, the job limits and memory eviction.
+
+`.github/workflows/ci.yml` runs the backend tests (Python 3.12) and the frontend build (Node 20) on every push to `main` and on every pull request. Check the **Actions** tab on GitHub for a green tick.
+
+---
+
+## Deployment
+
+### Backend on Render
+| Field | Value |
+|---|---|
+| Root Directory | `backend` |
+| Runtime | Python 3 |
+| Build Command | `pip install -r requirements.txt` |
+| Start Command | `uvicorn main:app --host 0.0.0.0 --port $PORT` |
+| Health Check Path | `/api/algos` |
+| Environment | `PYTHON_VERSION=3.12.7`, `MAX_UPLOAD_MB=25`, `ALLOWED_ORIGINS=https://your-app.vercel.app,http://localhost:5173` |
+
+Do not add `--reload` or extra workers. Datasets and models live in one process's memory, so a second worker would not see them.
+
+### Frontend on Vercel
+| Field | Value |
+|---|---|
+| Root Directory | `frontend` |
+| Framework | Vite |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Environment | `VITE_API_URL=https://your-service.onrender.com` |
+
+Deploy the backend first, then set `VITE_API_URL`, then tighten `ALLOWED_ORIGINS`. Every push to `main` redeploys both.
+
+**Free-plan behaviour:** the Render service sleeps after about 15 minutes idle, so the first request can take about a minute. Loaded datasets and trained models are lost whenever it sleeps or restarts. With about 512 MB of RAM, keep uploads small and avoid heavy models on big data.
 
 ---
 
 ## Design decisions
 
-- **Pipelines prevent data leakage:** imputation, encoding and scaling are fitted on the training split only.
-- **Separate workflows for supervised and unsupervised learning:** clustering and anomaly detection use internal validation metrics rather than a train/test split.
-- **One shared dataset state:** feature engineering changes the dataset used by every other tab, so the effect of cleaning on model quality is easy to see.
-- **Honest sampling:** algorithms that scale badly on large data use a seeded random sample, and the UI says so instead of silently changing results.
-- **Glass UI with Bootstrap and Tailwind together:** Bootstrap provides the grid, forms and tables. Tailwind provides utility classes. Tailwind's preflight reset is turned off so the two do not conflict.
-- **In-memory storage:** datasets, history and trained models live in server memory for speed and simplicity. The history is capped so memory use stays predictable.
+- **Pipelines prevent leakage:** imputation, encoding and scaling are fitted on the training split only.
+- **Separate workflows:** clustering and anomaly detection use internal validation metrics, not a train/test split.
+- **One shared dataset state:** feature engineering changes the data every other tab uses, so you can see how cleaning affects model quality.
+- **Honest sampling:** algorithms that scale badly on large data use a seeded sample, and the UI says so.
+- **Tuning on the training split:** the search sees only cross-validation on training data, so the test score stays an honest estimate.
+- **Background jobs with polling:** long runs do not block the server or time out, and they report real progress.
+- **Session-only state:** nothing is stored beyond the current visit, so there are no accounts or database to secure.
+- **Optional heavy dependencies:** SHAP and pyarrow are used only if installed, so a small server never has to carry them.
 
 ---
 
@@ -461,66 +515,33 @@ Errors come back as JSON `{ "detail": "..." }` with a readable message (for exam
 
 | Problem | Fix |
 |---|---|
-| "Backend not running. Start it on port 8000." | Start `uvicorn main:app --reload --port 8000` in `backend/` and refresh |
-| Blank page or red error after pasting code | Open the browser console (F12), read the first red error, and check the file it names |
-| `list is not defined` on the Supervised tab | In `function Train`, make sure the line `const list = meta[task]` is still there |
-| "Unexpected token ... is not valid JSON" | You are on an old version of the API helper. Update it so non-JSON errors show a readable message |
-| Changes not showing | Hard refresh with Ctrl+Shift+R |
-| `ModuleNotFoundError` in the backend | Activate the virtual environment and run `pip install -r requirements.txt` again |
-| `sparse_output` error | Upgrade scikit-learn: `pip install -U scikit-learn` |
-| Port already in use | Stop the other process, or change the port in the `uvicorn` command and in `vite.config.js` |
-| "Choose Regression instead" / "Choose Classification instead" | The target column does not match the learning type. Use the one-click switch in the yellow notice |
-| "File is larger than 500 MB" | Upload a smaller sample, or raise `MAX_UPLOAD_MB` in `backend/main.py` if your computer has enough RAM |
-| Upload or training is slow on a big file | Pick fewer algorithms. Random Forest, Gradient Boosting and SVM are the slowest. Installing `pyarrow` speeds up file parsing |
+| "Backend not running. Start it on port 8000." | Start `uvicorn main:app --reload --port 8000` in `backend/` and refresh. On the live site, open the Render `/api/algos` URL, wait a minute and refresh |
+| "Dataset not found... please reload your dataset" | The server restarted or dropped old data. Load the dataset again |
+| "You already have a job running" / "The server is busy" | Wait for the running job or cancel it. Each browser tab gets one job, and the server runs `MAX_CONCURRENT_JOBS` at once |
+| Predict tab is empty after changing the data | Feature engineering clears trained models. Train again |
+| Yellow notice about the target type | The target column does not match the learning type. Use the one-click switch |
 | `cv_mean` and `cv_std` are empty | Cross-validation is skipped above 20,000 training rows, or when a class has only one row |
-| `trained_rows` is smaller than your dataset | SVM and SVR train on a 10,000-row sample for speed. Test metrics still use the full test set |
-| Unsupervised note says a sample was used | The data was larger than the sampling cap for that algorithm. See [Performance and limits](#performance-and-limits) |
-| Undo does nothing | Only the last 5 steps can be undone. Use **Reset all** to go back to the original |
-| Predictions fail after changing data | Retrain: feature engineering clears trained models, and the Predict tab needs a fresh one |
+| `trained_rows` is smaller than the dataset | SVM and SVR train on a 10,000-row sample. Test metrics still use the full test set |
+| DBSCAN shows empty metrics | Everything was labelled noise. Increase `eps` |
+| Changes not showing | Hard refresh with Ctrl+Shift+R |
+| `ModuleNotFoundError` in the backend | Activate the virtual environment and run `pip install -r requirements.txt` |
+| A test fails on the models list | An old duplicate `GET /api/models/{dataset_id}` route in `main.py` returns the wrong shape. Keep only the one in `tune.py` |
+| CORS error in the browser console | `ALLOWED_ORIGINS` on Render must match your Vercel URL exactly, with `https://` and no trailing slash |
+| Requests return 404 on the Vercel domain | `VITE_API_URL` is missing or wrong. Fix it, then redeploy |
+| Render build fails on `dotenv` or `optuna` | Make sure `python-dotenv` and `optuna` are in `backend/requirements.txt` |
+| SHAP switch is missing | `shap` is not installed on that server. This is expected, and the what-if method still works |
 
 ---
 
-## Known limitations and what is not built
+## Known limitations
 
-**Data and storage**
-- Datasets, history and trained models are stored in memory and are lost when the backend restarts. There are no user accounts, saved experiments or database (MongoDB) in this version, and models are not saved to disk (no `joblib`).
-- CORS is open for local development. Do not expose the backend publicly as is.
-
-**Scale**
-- Very large files are limited by RAM. SVM, SVR and the slower clustering algorithms use samples on big data, so their scores there are approximate.
-- Training and clustering run as a single request, so the loader shows an elapsed-seconds counter but not real per-model progress. The status messages rotate on a timer.
-
-**Visualisations not included yet**
-- Box plots and scatter plots in Explore, a dendrogram for hierarchical clustering, a regression line plot, a per-sample silhouette plot, a standalone t-SNE/PCA visualisation page, and a precision-recall or ROC curve for multiclass problems (only the ROC-AUC number is shown).
-- The classification report is calculated but not displayed.
-
-**Learning features not included yet**
-- Hyperparameter tuning (Optuna or grid search), AutoML, SHAP explanations, imbalanced-data handling (`imbalanced-learn`), a "Learning mode" that explains each algorithm, experiment history and comparison, and automatic dataset insights.
-- Time series and text datasets are detected but cannot be trained on.
-- DBSCAN `eps` and the anomaly contamination rate (5%) are fixed. They are not adjustable in the UI.
-
-**Datasets not bundled**
-- California Housing, Wholesale Customers and Credit Card Fraud are not built in. Download them (UCI, Kaggle or scikit-learn) and upload as CSV.
-
-**Heuristics**
-- Dataset type detection relies on column names and value patterns. It can be wrong, which is why the override chips exist.
-
----
-
-## Roadmap status
-
-| Phase | Work | Status |
-|---|---|---|
-| 1 | Dataset upload and EDA | Done |
-| 2 | Data preprocessing and feature engineering | Done (extended well beyond the original plan) |
-| 3 | Linear and Logistic Regression | Done |
-| 4 | KNN, Decision Tree, Random Forest, SVM and more | Done (18 supervised algorithms) |
-| 5 | K-Means, DBSCAN, Hierarchical | Done (plus GMM, Mean Shift) |
-| 6 | Train/test split and evaluation metrics | Done |
-| 7 | Interactive graphs and model comparison | Done |
-| 8 | PCA, anomaly detection, dimensionality reduction | Done (as an engineering step and in the cluster view) |
-| 9 | AutoML and hyperparameter tuning | Not started |
-| 10 | SHAP explanations and experiment history | Not started |
-| Extra | Large-file support and speed (500 MB uploads, multi-core, sampling) | Done |
-
-Ideas for next steps: hyperparameter tuning, a classification report view, box and scatter plots, a dendrogram, saved experiments with MongoDB, model download with `joblib`, SHAP explanations, real per-model progress (streaming), and checking anomaly detectors against a labelled outlier column.
+- **No accounts or database.** Datasets, models and history live in memory or in the browser tab and are lost on restart or reload. Export History if you want to keep it.
+- **No resampling such as SMOTE.** Balancing uses class weights, which only some models support. KNN, Naive Bayes, Gradient Boosting and AdaBoost ignore it.
+- **Time series and text datasets are detected but cannot be trained on.**
+- **Large data is sampled** for SVM, SVR and the slower clustering algorithms, so their scores there are approximate.
+- **Anomaly check assumption:** the rarer value of the label column is treated as the true outlier.
+- **Detection and insights are heuristics** and can be wrong or miss problems.
+- **Two example datasets are synthetic.** The real Kaggle fraud data, California Housing and Wholesale Customers are not bundled. Upload them as CSV.
+- **Downloaded models are pickles.** Load only files you trust, with the scikit-learn version they were saved with.
+- **`SVC(probability=True)`** is deprecated in scikit-learn 1.9 and removed in 1.11, so the dependency is pinned below 1.11.
+- **CORS is open by default** for local development. Restrict `ALLOWED_ORIGINS` in production.
