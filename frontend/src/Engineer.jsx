@@ -6,7 +6,7 @@ const G = ({ title, children }) => (
   </div>
 );
 const post = async (u, b) => {
-  const r = await fetch((import.meta.env.VITE_API_URL || '') + '/api' + u, {
+  const r = await fetch((import.meta.env.VITE_API_URL || "") + "/api" + u, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(b || {}),
@@ -234,6 +234,18 @@ export default function Engineer({ ds, load, run }) {
               tabs.
             </span>
           )}
+          <div className="mt-3">
+            <a
+              className="btn btn-outline-light btn-sm"
+              href={
+                (import.meta.env.VITE_API_URL || "") +
+                "/api/fe/download/" +
+                ds.id
+              }
+            >
+              Download current data as CSV
+            </a>
+          </div>
         </G>
         <G
           title={`Current data: ${ds.rows} rows, ${ds.cols.length} columns, ${ds.duplicates} duplicates`}
