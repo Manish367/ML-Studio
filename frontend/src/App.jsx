@@ -1486,7 +1486,7 @@ function Cluster({ ds, meta, cl, setCl, run, busy }) {
                   {labs.map((l) => (
                     <Scatter
                       key={l}
-                      name={l === -1 ? "outlier" : `cluster ${l}`}
+                      name={l === -1 ? "outlier" : cl.anomaly ? "normal" : `cluster ${l}`}
                       data={cl.points.filter((p) => p.c === l)}
                       fill={l === -1 ? "#f87171" : COL[l % 8]}
                     />
@@ -1524,7 +1524,7 @@ function Cluster({ ds, meta, cl, setCl, run, busy }) {
                 ["inertia", "Elbow method (inertia)", "#22d3ee"],
                 ["silhouette", "Silhouette by K", "#f472b6"],
                 ["nearest_cluster", "Nearest cluster distance", "#facc15"],
-              ].map(([key, t, c]) => (
+              ].filter(() => cl.elbow.length > 0).map(([key, t, c]) => (
                 <div key={key} className="col-md-4">
                   <G title={t}>
                     <Chart h={170}>
@@ -1543,7 +1543,7 @@ function Cluster({ ds, meta, cl, setCl, run, busy }) {
                   <Chart h={180}>
                     <BarChart
                       data={Object.entries(cl.counts).map(([a, n]) => ({
-                        c: a === "-1" ? "outlier" : a,
+                        c: a === "-1" ? "outlier" : cl.anomaly ? "normal" : a,
                         n,
                       }))}
                     >

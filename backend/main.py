@@ -675,11 +675,16 @@ def _cluster(r: ClusterReq, tick=None):
     if total > cap:
         keep = rng.choice(total, cap, replace=False)
         X = X[keep]
-    rows = k_scan(
-        X,
-        lambda i, n: tk(5 + 50 * i // n, f"Testing K = {i + 2} (step {i + 1} of {n})..."),
+        uses_k = r.algo in ("kmeans", "agglomerative", "gmm")
+    rows = (
+        k_scan(
+            X,
+            lambda i, n: tk(5 + 50 * i // n, f"Testing K = {i + 2} (step {i + 1} of {n})..."),
+        )
+        if uses_k
+        else []
     )
-    picks = pick_k(rows)
+    picks = pick_k(rows) if rows else {}
     k = r.k if r.k_method == "manual" else picks.get(r.k_method, r.k)
     tk(60, f"Fitting {r.algo}...")
     est = CLU[r.algo](k)
@@ -794,6 +799,7 @@ def _cluster(r: ClusterReq, tick=None):
     pts = [{"x": float(Z[j][0]), "y": float(Z[j][1]), "c": int(lab[j])} for j in sel]
     counts = {str(k): int(v) for k, v in zip(*np.unique(lab, return_counts=True))}
     return {
+        "anomaly": r.algo in ("isolation_forest", "lof", "oneclass_svm"),
         "dendro": dendro,
         "silhouette_plot": sil_plot,
         "label_check": label_check,
