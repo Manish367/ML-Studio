@@ -134,7 +134,7 @@ export default function Experiments({ exps, setExps }) {
                   type="number"
                   stroke="#a5b4fc"
                   fontSize={11}
-                  domain={["auto", "auto"]}
+                  domain={cur === 'accuracy' ? [0, 1] : ['auto', 'auto']}
                 />
                 <YAxis
                   type="category"
