@@ -166,14 +166,7 @@ export default function Engineer({ ds, load, run }) {
           </div>
           {cfg.hint && (
             <div>
-              <span
-                className="chip"
-                onClick={() =>
-                  setCols(ds.cols.filter((c) => c.numeric).map((c) => c.name))
-                }
-              >
-                all numeric
-              </span>
+              <span className="chip" onClick={() => setCols(ds.cols.filter(c => c.numeric && c.name !== ds.detected?.target).map(c => c.name))}>all numeric (not the label)</span>
               <span className="chip" onClick={() => setCols([])}>
                 clear
               </span>
@@ -220,7 +213,7 @@ export default function Engineer({ ds, load, run }) {
           </div>
         </G>
       </div>
-      <div className="col-lg-8 d-grid gap-3">
+      <div className="col-lg-8 d-grid gap-3" style={{ gridTemplateColumns: "minmax(0, 1fr)" }}>
         <G title="Applied steps">
           {(ds.log || []).length ? (
             <ol className="mb-0 small">

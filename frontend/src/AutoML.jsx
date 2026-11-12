@@ -164,7 +164,7 @@ export default function AutoML({
                     type="number"
                     stroke="#a5b4fc"
                     fontSize={11}
-                    domain={["auto", "auto"]}
+                    domain={res.metric === 'r2' ? ['auto', 1] : [0, 1]}
                   />
                   <YAxis
                     type="category"
