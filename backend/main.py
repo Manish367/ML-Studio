@@ -675,7 +675,7 @@ def _cluster(r: ClusterReq, tick=None):
     if total > cap:
         keep = rng.choice(total, cap, replace=False)
         X = X[keep]
-        uses_k = r.algo in ("kmeans", "agglomerative", "gmm")
+    uses_k = r.algo in ("kmeans", "agglomerative", "gmm")
     rows = (
         k_scan(
             X,
