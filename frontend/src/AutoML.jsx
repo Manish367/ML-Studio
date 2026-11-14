@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { call } from "./Tuner.jsx";
 import { logExp, autoRecord } from "./experiments.js";
+import { useNarrow } from './useNarrow.js'
 
 const EFFORT = { Quick: [10, 15], Balanced: [15, 20], Thorough: [25, 40] };
 const fmt = (v) => (typeof v === "number" ? +v.toPrecision(3) : String(v));
@@ -24,6 +25,7 @@ export default function AutoML({
   ts,
   balance,
 }) {
+  const narrow = useNarrow();
   const [effort, setEffort] = useState("Balanced");
   const [job, setJob] = useState(null);
   const [err, setErr] = useState("");
@@ -171,7 +173,7 @@ export default function AutoML({
                     dataKey="model"
                     stroke="#a5b4fc"
                     fontSize={11}
-                    width={130}
+                    width={narrow ? 95 : 130}
                   />
                   <Tooltip
                     contentStyle={{

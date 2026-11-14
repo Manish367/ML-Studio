@@ -8,6 +8,7 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
+import { useNarrow } from "./useNarrow.js";
 const G = ({ title, children }) => (
   <div className="glass p-4">
     {title && <h6 className="fw-semibold mb-3">{title}</h6>}
@@ -46,6 +47,7 @@ export default function Experiments({ exps, setExps }) {
     ),
   ];
   const [lab, setLab] = useState("");
+  const narrow = useNarrow();
   const cur = labels.includes(lab) ? lab : labels[0];
   const chart = exps
     .map((e, i) => ({
@@ -141,7 +143,7 @@ export default function Experiments({ exps, setExps }) {
                   dataKey="run"
                   stroke="#a5b4fc"
                   fontSize={11}
-                  width={110}
+                  width={narrow ? 85 : 110}
                 />
                 <Tooltip
                   contentStyle={{

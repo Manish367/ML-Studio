@@ -227,3 +227,59 @@ input.form-control[type="number"] {
   color: #fecaca;
   border: 1px solid rgba(248, 113, 113, 0.5);
 }
+/* ---------- layout safety (all screens) ---------- */
+.d-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+.row > * {
+  min-width: 0;
+}
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ---------- tablets and phones ---------- */
+@media (max-width: 991px) {
+  .navscroll {
+    width: 100%;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .navscroll::-webkit-scrollbar {
+    display: none;
+  }
+  .navscroll .tabbtn {
+    flex: 0 0 auto;
+  }
+}
+@media (max-width: 575px) {
+  .container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+  .glass.p-4 {
+    padding: 1rem !important;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+  .display-5 {
+    font-size: 2rem;
+  }
+  .table {
+    font-size: 0.82rem;
+  }
+  .chip {
+    font-size: 0.78rem;
+  }
+  .form-range {
+    width: 100%;
+  }
+  body {
+    background-attachment: scroll;
+  }
+}

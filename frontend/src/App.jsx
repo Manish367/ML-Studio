@@ -24,6 +24,7 @@ import Experiments from "./Experiments.jsx";
 import { logExp, trainRecord, clusterRecord } from "./experiments.js";
 import { AlgoNote } from "./Learn.jsx";
 import { MultiRoc, Dendrogram, SilhouettePlot } from "./Viz.jsx";
+import { useNarrow } from "./useNarrow.js";
 
 const COL = [
   "#22d3ee",
@@ -200,11 +201,21 @@ export default function App() {
     return () => window.removeEventListener("ml-exp", h);
   }, []);
   const [err, setErr] = useState("");
-  useEffect(() => {
-    api("/algos")
-      .then(setMeta)
-      .catch(() => setErr("Backend not running. Start it on port 8000."));
-  }, []);
+  const [waking, setWaking] = useState(true);
+  const loadMeta = async (n = 0) => {
+    setWaking(true);
+    try {
+      setMeta(await api("/algos"));
+      setErr("");
+      setWaking(false);
+    } catch {
+      if (n >= 12) {
+        setWaking(false);
+        setErr("Could not reach the server. It may still be starting up (free hosting). Tap Retry in a minute.");
+      } else setTimeout(() => loadMeta(n + 1), 5000);
+    }
+  };
+  useEffect(() => { loadMeta(); }, []);
   const run = async (f) => {
     setBusy(true);
     setErr("");
@@ -240,19 +251,27 @@ export default function App() {
             Upload a CSV, compare models, see what they learned.
           </div>
         </div>
-        <div className="glass p-2 d-flex flex-wrap flex-lg-nowrap gap-1 ms-auto">
+        <div className="glass p-2 d-flex flex-wrap flex-lg-nowrap gap-1 ms-auto navscroll">
           {tabs.map(([k, l]) => (
             <div
               key={k}
               className={`tabbtn ${tab === k ? "on" : ""}`}
-              onClick={() => setTab(k)}
+              onClick={() => { setTab(k); window.scrollTo({ top: 0, behavior: "smooth" }); }}
             >
               {l}
             </div>
           ))}
         </div>
       </div>
-      {err && <div className="alert alert-danger glass">{err}</div>}
+            {!meta && waking && (
+        <div className="alert glass py-2 small">Waking up the server... the free host sleeps when idle, so the first load can take up to a minute. Examples appear as soon as it responds.</div>
+      )}
+      {err && (
+        <div className="alert alert-danger glass d-flex flex-wrap gap-2 align-items-center">
+          <span>{err}</span>
+          {!meta && <button className="btn btn-outline-light btn-sm ms-auto" onClick={() => loadMeta()}>Retry</button>}
+        </div>
+      )}
       {busy && (
         <div className="progress mb-3" style={{ height: 4 }}>
           <div className="progress-bar progress-bar-striped progress-bar-animated w-100" />
@@ -340,6 +359,7 @@ function Data({ meta, ds, load, run }) {
             }}
           />
           <div className="small opacity-75 mb-3">Or try an example dataset</div>
+          {!meta && <div className="small opacity-75 mb-3">Loading examples... the free server can take up to a minute to wake up.</div>}
           <Group
             title="Supervised: classification"
             sub="Has a label column to predict (a category)"
@@ -1567,6 +1587,7 @@ function Cluster({ ds, meta, cl, setCl, run, busy }) {
 
 function Predict({ ds, run }) {
   const [models, setModels] = useState([]);
+  const narrow = useNarrow()
   const [model, setModel] = useState("");
   const [row, setRow] = useState({});
   const [res, setRes] = useState(null);
@@ -1759,7 +1780,7 @@ pred = b["pipe"].predict(row)[0]
               >
                 <CartesianGrid stroke="#ffffff18" />
                 <XAxis type="number" {...ax} />
-                <YAxis type="category" dataKey="label" {...ax} width={140} />
+                <YAxis type="category" dataKey="label" {...ax} width={narrow ? 95 : 140} />
                 {Tip}
                 <Bar dataKey="pos" stackId="a" fill="#22d3ee" />
                 <Bar dataKey="neg" stackId="a" fill="#f472b6" />
@@ -1806,7 +1827,7 @@ pred = b["pipe"].predict(row)[0]
                     type="category"
                     dataKey="feature"
                     {...ax}
-                    width={110}
+                    width={narrow ? 85 : 110}
                   />
                   {Tip}
                   <Bar
